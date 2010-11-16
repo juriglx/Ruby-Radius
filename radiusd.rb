@@ -2,7 +2,7 @@
 require 'rubygems'
 require 'eventmachine'
 require 'lib/packet'
-require 'lib/dictionary-BACKUP.rb-BACKUP'
+require 'lib/dictionary.rb'
  
 class RadiusServer < EM::Connection
  
