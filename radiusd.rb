@@ -2,23 +2,18 @@
 require 'rubygems'
 require 'eventmachine'
 require 'lib/packet'
-require 'lib/dictionary'
+require 'lib/dictionary-BACKUP.rb-BACKUP'
  
 class RadiusServer < EM::Connection
  
  def receive_data(data)
-	dict = Radius::Dictionary.new
-  dictionary_path="./dictionaries"
+	dict = Radius::Dictionary.new("./dictionaries/dictionary")
 
-  Dir::foreach dictionary_path do |entry|
-   if entry!="." && entry!=".."
-     dict.load(dictionary_path+"/"+entry)
-     end
-  end
-  
- 	radiusPacket = Radius::Packet.new(dict)
-	radiusPacket.unpack(data)
-#  puts	radiusPacket.to_s()+"\n\n"
+ #	radiusPacket = Radius::Packet.new(dict, "secret")
+ 	puts data
+	radiusPacket = Radius::Packet.unpack(dict, data, "secret")
+
+  puts	radiusPacket.to_s()+"\n\n"
   send_data radiusPacket.get_accounting_response_packet
  end
 end

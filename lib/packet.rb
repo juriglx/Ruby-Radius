@@ -22,7 +22,8 @@ module Radius
         'Status-Client' => 13
     }
 
-    VSA_TYPE = 26        # type given to vendor-specific attributes in RFC 2138
+    # type given to vendor-specific attributes in RFC 2138
+    VSA_TYPE = 26
 
     # The one-byte Identifier used to match requests and responses is
     # obtained as a character.
@@ -107,7 +108,7 @@ module Radius
           p.set_attributes({:vendor => vendor, :attr => attr, :value => val})
         else
           # This is not a vendor specific attribute
-          type = p.dictionary.attr_type(0, type_id) # 0 is the "default" vendor id
+          type = p.dictionary.attr_type(type_id, 0) # 0 is the "default" vendor id
           raise "Garbled attribute #{type_id}" if (type == nil)
           val = case type
             when 'string' then
@@ -171,7 +172,7 @@ module Radius
       return(0)
     end
 
-    def inet_ntoa(iaddr)
+    def self.inet_ntoa(iaddr)
       return(sprintf("%d.%d.%d.%d", (iaddr >> 24) & 0xff, (iaddr >> 16) & 0xff,
                      (iaddr >> 8) & 0xff, (iaddr) & 0xff))
     end
@@ -339,8 +340,8 @@ module Radius
     def get_response_authenticator
        hdrlen = 1 + 1 + 2 + 16 # size of packet header
        p_hdr = "CCna16a*" # pack template for header
-       attributes=""
-       hash_data=[5, @identifier, attributes.length + hdrlen,@authenticator, attributes,@secret].pack(p_hdr)
+       attributes=@attributes.to_s
+       hash_data=[5, @identifier, attributes.length + hdrlen, @authenticator, attributes, @secret].pack(p_hdr)
        digest = Digest::MD5.digest(hash_data)
     end
 
