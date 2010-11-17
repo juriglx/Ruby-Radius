@@ -13,12 +13,15 @@ describe Radius::Packet do
 #	NAS-Identifier = "pae-test-1"
 #	Called-Station-Id = "00-0B-6B-4F-83-4A:aaa-test"
 #	Acct-Terminate-Cause = NAS-Reboot
-    data = ["04000054565bc8a5439c6443278a6368783d1a8b2806000000072" +
-            "d060000000104060a000507200c7061652d746573742d311e1c3" +
-            "0302d30422d36422d34462d38332d34413a6161612d746573743" +
-            "1060000000b"].pack("H*")
+           #  1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+    data = ["04000054565bc8a5439c6443278a6368783d1a8b" +
+            "2806000000072d060000000104060a000507200c" +
+            "7061652d746573742d311e1c30302d30422d3642" +
+            "2d34462d38332d34413a6161612d746573743106" +
+            "0000000b"].pack("H*")
+
     @dictionary = Radius::Dictionary.new("dictionaries/dictionary")
-    @packet = Radius::Packet.new(data)
+    @packet = Radius::Packet.new(:secret => "secret", :data => data)
   end
 
   it "should parse the packet code" do
@@ -38,7 +41,17 @@ describe Radius::Packet do
   end
 
   it "can be checked if it is valid" do
-    @packet.valid?("secret").should == true
+    @packet.valid?.should == true
+  end
+
+  it "should parse the authenticator" do
+    @packet.authenticator.length.should == 16
+  end
+
+  it "should can generate a response packet" do
+    response = Radius::Packet.new(:request => @packet)
+    response.code.should == "Accounting-Response"
+    response.identifier.should == @packet.identifier
   end
 
 end

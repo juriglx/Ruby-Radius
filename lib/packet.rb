@@ -16,12 +16,16 @@ module Radius
 
     attr_accessor :identifier
     attr_accessor :length
+    attr_accessor :raw_data
+    attr_accessor :secret
+    attr_accessor :authenticator
 
-    def initialize(data)
-      @raw_data = data
+    def initialize(args = nil)
+      @secret = args[:secret] || "secret" 
       @attributes = {}
 
-      unpack(data)
+      unpack(args[:data]) unless args[:data].nil?
+      make_response(args[:request]) unless args[:request].nil?
     end
 
     def code
@@ -55,16 +59,33 @@ module Radius
       s
     end
 
-    def valid?(secret)
+    def valid?
       auth = Digest::MD5.digest([@code, @identifier, @length,
-                                 @raw_attributes, secret].pack("CCnx16a*a*"))
+                                 @raw_attributes, @secret].pack("CCnx16a*a*"))
       return auth == @authenticator
     end
 
     private
 
+    def make_response(request)
+      case request.code
+
+        when "Accounting-Request"
+
+          @code = 5
+          @identifier = request.identifier
+          @length = 20 # 16 auth, 2 len, 1 code, 1 id
+          @raw_data = [@code, @identifier, @length].pack("CCn")
+          @authenticator = Digest::MD5.digest(@raw_data +
+                  [request.authenticator, request.secret].pack("a16a*"))
+          @raw_data << [@authenticator].pack("a*")
+
+      end
+    end
+
     def unpack(data)
-      @code, @identifier, @length, @authenticator, @raw_attributes = data.unpack("CCna16a*")
+      @raw_data = data
+      @code, @identifier, @length, @authenticator, @raw_attributes = @raw_data.unpack("CCna16a*")
 
       attributes = @raw_attributes
       while attributes.length > 0

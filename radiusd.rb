@@ -8,21 +8,16 @@ class RadiusServer < EM::Connection
  
  def receive_data(data)
 	dict = Radius::Dictionary.new("./dictionaries/dictionary")
-    radius_packet = Radius::Packet.new(data)
 
-    puts radius_packet.to_s(dict)
-    puts "valid" if radius_packet.valid?("secret")
-    
+    in_packet = Radius::Packet.new(:secret => "secret", :data => data)
 
-    #packet = Radius::Packet.new(data, "secret")
-    #puts data.unpack("H*").join(", ")
-   #puts data
-
-   #puts data.to_a
-	#radiusPacket = Radius::Packet.unpack(dict, data, "secret")
-
-  #puts	radiusPacket.to_s()+"\n\n"
-  #send_data radiusPacket.get_accounting_response_packet
+    if in_packet.code == "Accounting-Request" and in_packet.valid?
+      puts in_packet.to_s(dict)
+      out_packet = Radius::Packet.new(:request => in_packet)
+      puts out_packet.to_s(dict)
+      send_data(out_packet.raw_data)
+    end
+   
  end
 end
  
