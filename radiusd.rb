@@ -2,19 +2,27 @@
 require 'rubygems'
 require 'eventmachine'
 require 'lib/packet'
-require 'lib/dictionary.rb'
+require 'lib/dictionary'
  
 class RadiusServer < EM::Connection
  
  def receive_data(data)
 	dict = Radius::Dictionary.new("./dictionaries/dictionary")
+    radius_packet = Radius::Packet.new(data)
 
- #	radiusPacket = Radius::Packet.new(dict, "secret")
- 	puts data
-	radiusPacket = Radius::Packet.unpack(dict, data, "secret")
+    puts radius_packet.to_s(dict)
+    puts "valid" if radius_packet.valid?("secret")
+    
 
-  puts	radiusPacket.to_s()+"\n\n"
-  send_data radiusPacket.get_accounting_response_packet
+    #packet = Radius::Packet.new(data, "secret")
+    #puts data.unpack("H*").join(", ")
+   #puts data
+
+   #puts data.to_a
+	#radiusPacket = Radius::Packet.unpack(dict, data, "secret")
+
+  #puts	radiusPacket.to_s()+"\n\n"
+  #send_data radiusPacket.get_accounting_response_packet
  end
 end
  

@@ -1,5 +1,4 @@
-require '../lib/dictionary.rb'
-
+require 'lib/dictionary.rb'
 
 describe Radius::Dictionary do
 

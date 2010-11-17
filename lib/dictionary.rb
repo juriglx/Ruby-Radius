@@ -16,7 +16,8 @@ module Radius
 
       File.open(dictionary_file, "r").each_line do |line|
 
-        tokens = line.split(/\s+/)
+        next if line =~ /^\#/ # discard comments
+        next if (tokens = line.split(/\s+/)) == []
 
         case tokens[0].upcase
           when "ATTRIBUTE"
@@ -58,10 +59,22 @@ module Radius
     private
 
     def resolve_value(entry, value)
+
+      if entry[:type] == "ipaddr"
+        entry[:value] = inet_ntoa(value.unpack("N")[0])
+      end
+
       return if entry[:values].nil?
+
+      value = value.unpack("N")[0]
 
       values = entry.delete(:values)
       entry[:value] = values[value][:name]
+    end
+
+    def inet_ntoa(iaddr)
+      return(sprintf("%d.%d.%d.%d", (iaddr >> 24) & 0xff, (iaddr >> 16) & 0xff,
+                     (iaddr >> 8) & 0xff, (iaddr) & 0xff))
     end
 
   end
