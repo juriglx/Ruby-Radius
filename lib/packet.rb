@@ -29,7 +29,8 @@ module Radius
     end
 
     def code
-      CODES[@code]
+      return CODES[@code] unless CODES[@code].nil?
+      "Unknown Code"
     end
 
     def attributes(dictionary = nil)
