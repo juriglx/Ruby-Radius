@@ -43,6 +43,12 @@ module Radius
 
     end
 
+
+    # recognizes the named arguments:
+    # * vendor_id - defaults to 0
+    # * attr_id - the numeric id of the attribute to resolve
+    # * name - the textual representation of the the attribute
+    # * value - the unparsed value of an attribute
     def lookup(args)
 
       vendor_id = args[:vendor_id] || 0

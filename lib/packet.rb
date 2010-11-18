@@ -14,12 +14,31 @@ module Radius
       13 => 'Status-Client'
     }
 
+    # returns the code as text
+    def code
+      return CODES[@code] unless CODES[@code].nil?
+      "Unknown Code"
+    end
+
+    # the identifier of the packet
     attr_accessor :identifier
+
+    # the lenght of the packet
     attr_accessor :length
+
+    # the packet as binary data
     attr_accessor :raw_data
+
+    # the secret assigned to the packet
     attr_accessor :secret
+
+    # the message authenticator
     attr_accessor :authenticator
 
+    # recognizes the named arguments:
+    # * secret - the secret associated with the packet
+    # * data - the raw data from the network, for incoming packets
+    # * request - the request packet, for which a response should be generated
     def initialize(args = nil)
       @secret = args[:secret] || "secret" 
       @attributes = {}
@@ -28,11 +47,8 @@ module Radius
       make_response(args[:request]) unless args[:request].nil?
     end
 
-    def code
-      return CODES[@code] unless CODES[@code].nil?
-      "Unknown Code"
-    end
-
+    # If a dictionary is given, the attributes will be resolved to a
+    # human readable format. Otherwise they are hexadecimal.
     def attributes(dictionary = nil)
       attr = {}
 
@@ -51,6 +67,8 @@ module Radius
       attr
     end
 
+    # If a dictionary is given, the attributes will be resolved to a
+    # human readable format. Otherwise they are hexadecimal.
     def to_s(dictionary = nil)
       s = "\n---- Radius Packet ----\n"
       s << "#{code} (id = #{@identifier}, length = #{@length})\n"
@@ -60,6 +78,7 @@ module Radius
       s
     end
 
+    # Checks with the authenticator if the packet is valid. 
     def valid?
       auth = Digest::MD5.digest([@code, @identifier, @length,
                                  @raw_attributes, @secret].pack("CCnx16a*a*"))
