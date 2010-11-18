@@ -57,7 +57,9 @@ module Radius
       raise "missing selector" if selector.nil?
 
       entry = @dictionary[vendor_id][selector]
-      resolve_value(entry, args[:value]) unless args[:value].nil?
+      return entry if entry.nil?
+
+      entry[:value] = resolve_value(entry, args[:value]) unless args[:value].nil?
       entry
 
     end
@@ -66,16 +68,26 @@ module Radius
 
     def resolve_value(entry, value)
 
-      if entry[:type] == "ipaddr"
-        entry[:value] = inet_ntoa(value.unpack("N")[0])
+      type = entry[:type]
+      return value.unpack("H*") if type.nil?
+
+      case type
+        when "string"
+          return value
+        when "date", "time"
+          return value.unpack("N")[0]
+        when "integer"
+          v = value.unpack("N")[0]
+          return v if entry[:values].nil?
+          enum_v = entry[:values][v]
+          return enum_v unless enum_v.nil?
+          return v
+        when "ipaddr"
+          return inet_ntoa(value.unpack("N")[0])
+        else
+          # Fallback
+          return value.unpack("H*")
       end
-
-      return if entry[:values].nil?
-
-      value = value.unpack("N")[0]
-
-      values = entry.delete(:values)
-      entry[:value] = values[value][:name]
     end
 
     def inet_ntoa(iaddr)

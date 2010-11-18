@@ -60,7 +60,12 @@ module Radius
       else
         @attributes.each {|attr_id, attr_value|
           entry = dictionary.lookup(:attr_id => attr_id, :value => attr_value)
-          attr[entry[:name]] = entry[:value] || attr_value
+          unless entry.nil?
+            attr[entry[:name]] = entry[:value] || attr_value
+          else
+            # Fallback
+            attr[attr_id] = attr_value.unpack("H*")
+          end
         }
       end
 
