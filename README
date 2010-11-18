@@ -1,9 +1,12 @@
-This is a hack and slash rework of Rafael R. Sevilla's ruby-radius project.
+This is a simple Radius Accounting Server based on Rafael R. Sevilla's and Ben Klangs work.
 
-I am basically turning this into a Radius Accounting Server that will allow storage of dictionaries and user's shared secrets in a database.
+I've redone some code and added tests.
+* I decoupled the dictionary from the packet parsing.
+* I added authenticator handling
 
-Right now radiusd.rb can decode Accounting Request packets using flat file dictionaries, and it generates and sends Accounting Response packets.
+Missing Features right now:
+* Vendor Specific Attributes
 
-radiusd.rb requires the eventmachine gem, and is a simple implementation of a radius server the just echo's avp's as they come in.
+The lib/auth.rb is legacy and is only kept for future work on authorization.
 
-I have gutted all the stuff that I dont need in order to maintain clarity.  There may be code that is silly, or unused right now - I will try to clean that up after I get the baseline more developed.
+
